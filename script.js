@@ -56,8 +56,14 @@ digits.forEach((digit) => {
 const operators = document.querySelectorAll(".operator");
 operators.forEach((operator) => {
   operator.addEventListener("click", () => {
+    if (globalOperator == null) {
+      // no pending operations
+      firstOperand = parseInt(output.textContent);
+    } else {
+      // pending operation: evaluate first before using next operator
+      firstOperand = evaluate();
+    }
     globalOperator = operator.textContent;
-    firstOperand = parseInt(output.textContent);
     awaitingSecondOperand = true;
   });
 });
@@ -65,20 +71,8 @@ operators.forEach((operator) => {
 // Handle equal button click
 const equalsButton = document.querySelector("#equals");
 equalsButton.addEventListener("click", () => {
-  // Check for special cases
   if (globalOperator != null) {
-    if (awaitingSecondOperand) {
-      secondOperand = firstOperand;
-    } else {
-      secondOperand = output.textContent;
-    }
-
-    // Operate and display output
-    output.textContent = operate(
-      globalOperator,
-      parseInt(firstOperand),
-      parseInt(secondOperand)
-    );
+    evaluate();
 
     // Reset variables
     firstOperand = null;
@@ -123,4 +117,22 @@ function operate(operator, num1, num2) {
       break;
   }
   return result;
+}
+
+function evaluate() {
+  // Check if entered second operand yet. If not, second operand is equal to first operand.
+  if (awaitingSecondOperand) {
+    secondOperand = firstOperand;
+  } else {
+    secondOperand = output.textContent;
+  }
+
+  // Operate and display output
+  output.textContent = operate(
+    globalOperator,
+    parseInt(firstOperand),
+    parseInt(secondOperand)
+  );
+
+  return output.textContent;
 }
