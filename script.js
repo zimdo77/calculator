@@ -2,15 +2,18 @@ const ADD = "+";
 const SUBTRACT = "-";
 const MULTIPLY = "×";
 const DIVIDE = "÷";
+const MAX_DISPLAY_CHARACTERS = 9;
 
-let awaitingSecondOperand = false;
-let awaitingNewOperation = false;
 let firstOperand = null;
 let secondOperand = null;
 let globalOperator = null;
 
+let awaitingSecondOperand = false; // flag triggered after choosing operator
+let awaitingNewOperation = false; // flag triggered after clicking equals sign
+
+// Initialise output display
 const output = document.querySelector("#output-display");
-output.textContent = 0;
+changeOutput(0);
 
 // All buttons change color when hovered over
 const buttons = document.querySelectorAll("#keypad div");
@@ -27,18 +30,15 @@ buttons.forEach((button) => {
 // Handle all clear (AC) button
 const ac = document.querySelector("#ac");
 ac.addEventListener("click", () => {
-  output.textContent = 0;
-  firstOperand = null;
-  secondOperand = null;
-  globalOperator = null;
-  answer = null;
+  changeOutput(0);
+  resetVariables();
 });
 
 // Handle digit button clicks
 const digits = document.querySelectorAll(".digit");
 digits.forEach((digit) => {
   digit.addEventListener("click", () => {
-    // Override current display if display is 0 or waiting for second operand
+    // Conditions for wiping existing display
     if (
       output.textContent == "0" ||
       awaitingSecondOperand ||
@@ -46,9 +46,10 @@ digits.forEach((digit) => {
     ) {
       awaitingSecondOperand = false;
       awaitingNewOperation = false;
-      output.textContent = "";
+      changeOutput("");
     }
-    output.textContent += digit.textContent;
+    // Append entered digits
+    appendOutput(digit.textContent);
   });
 });
 
@@ -58,7 +59,7 @@ operators.forEach((operator) => {
   operator.addEventListener("click", () => {
     if (globalOperator == null) {
       // no pending operations
-      firstOperand = parseInt(output.textContent);
+      firstOperand = parseFloat(output.textContent);
     } else {
       // pending operation: evaluate first before using next operator
       firstOperand = evaluate();
@@ -73,16 +74,12 @@ const equalsButton = document.querySelector("#equals");
 equalsButton.addEventListener("click", () => {
   if (globalOperator != null) {
     evaluate();
-
-    // Reset variables
-    firstOperand = null;
-    secondOperand = null;
-    globalOperator = null;
+    resetVariables();
     awaitingNewOperation = true;
   }
 });
 
-// FUNCTIONS
+// FUNCTIONS //
 
 function add(num1, num2) {
   return num1 + num2;
@@ -119,8 +116,14 @@ function operate(operator, num1, num2) {
   return result;
 }
 
+function resetVariables() {
+  firstOperand = null;
+  secondOperand = null;
+  globalOperator = null;
+}
+
 function evaluate() {
-  // Check if entered second operand yet. If not, second operand is equal to first operand.
+  // Let the second operand equal the first if not entered
   if (awaitingSecondOperand) {
     secondOperand = firstOperand;
   } else {
@@ -128,11 +131,26 @@ function evaluate() {
   }
 
   // Operate and display output
-  output.textContent = operate(
-    globalOperator,
-    parseInt(firstOperand),
-    parseInt(secondOperand)
+  changeOutput(
+    operate(globalOperator, parseFloat(firstOperand), parseFloat(secondOperand))
   );
 
   return output.textContent;
+}
+
+function formatOutput(number) {
+  let result = number.toString();
+  if (result.length > MAX_DISPLAY_CHARACTERS) {
+    result = number.toExponential(2);
+  }
+  return result;
+}
+
+function changeOutput(value) {
+  output.textContent = formatOutput(value);
+}
+
+function appendOutput(value) {
+  let newOutput = parseFloat(output.textContent + value);
+  output.textContent = formatOutput(newOutput);
 }
