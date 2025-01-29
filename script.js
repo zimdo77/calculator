@@ -28,16 +28,16 @@ buttons.forEach((button) => {
 });
 
 // Handle all clear (AC) button
-const ac = document.querySelector("#ac");
+const acButton = document.querySelector("#ac");
 ac.addEventListener("click", () => {
   changeOutput(0);
   resetVariables();
 });
 
 // Handle digit button clicks
-const digits = document.querySelectorAll(".digit");
-digits.forEach((digit) => {
-  digit.addEventListener("click", () => {
+const digitButtons = document.querySelectorAll(".digit");
+digitButtons.forEach((digitButton) => {
+  digitButton.addEventListener("click", () => {
     // Conditions for wiping existing display
     if (
       output.textContent == "0" ||
@@ -49,14 +49,14 @@ digits.forEach((digit) => {
       changeOutput("");
     }
     // Append entered digits
-    appendOutput(digit.textContent);
+    appendOutput(digitButton.textContent);
   });
 });
 
 // Handle operator button clicks
-const operators = document.querySelectorAll(".operator");
-operators.forEach((operator) => {
-  operator.addEventListener("click", () => {
+const operatorButtons = document.querySelectorAll(".operator");
+operatorButtons.forEach((operatorButton) => {
+  operatorButton.addEventListener("click", () => {
     if (globalOperator == null) {
       // no pending operations
       firstOperand = parseFloat(output.textContent);
@@ -64,7 +64,7 @@ operators.forEach((operator) => {
       // pending operation: evaluate first before using next operator
       firstOperand = evaluate();
     }
-    globalOperator = operator.textContent;
+    globalOperator = operatorButton.textContent;
     awaitingSecondOperand = true;
   });
 });
@@ -77,6 +77,24 @@ equalsButton.addEventListener("click", () => {
     resetVariables();
     awaitingNewOperation = true;
   }
+});
+
+//  Handle plus-minus button click
+const plusMinusButton = document.querySelector("#plus-minus");
+plusMinusButton.addEventListener("click", () => {
+  changeOutput(multiply(output.textContent, -1));
+});
+
+// Handle percentage button click
+const percentageButton = document.querySelector("#percentage");
+percentageButton.addEventListener("click", () => {
+  changeOutput(divide(output.textContent, 100));
+});
+
+// Handle decimal button click
+const decimalButton = document.querySelector("#decimal");
+decimalButton.addEventListener("click", () => {
+  appendOutput(".");
 });
 
 // FUNCTIONS //
@@ -151,6 +169,9 @@ function changeOutput(value) {
 }
 
 function appendOutput(value) {
-  let newOutput = parseFloat(output.textContent + value);
+  let newOutput = output.textContent + value;
+  if (value !== ".") {
+    newOutput = parseFloat(newOutput);
+  }
   output.textContent = formatOutput(newOutput);
 }
