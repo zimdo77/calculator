@@ -3,23 +3,25 @@ const SUBTRACT = "-";
 const MULTIPLY = "×";
 const DIVIDE = "÷";
 
+const DEFAULT_OUTPUT = "0";
 const MAX_DISPLAY_CHARACTERS = 9;
 const DEFAULT_OPACITY = 1;
 const HIGHLIGHT_OPACITY = 0.8;
 
 let firstOperand = null;
 let secondOperand = null;
-let globalOperator = null;
-let selectedOperatorButton = null;
+let globalOperator = null; // value of operator being used
+let selectedOperatorButton = null; // DOM object reference of current operator
 
 let awaitingSecondOperand = false; // flag triggered after choosing operator
 let awaitingNewOperation = false; // flag triggered after clicking equals sign
 
 // Initialise output display
 const output = document.querySelector("#output-display");
-changeOutput(0);
+changeOutput(DEFAULT_OUTPUT);
 
-// All buttons change color when hovered over
+// All buttons change color when hovered over,
+// except the selected operator - which is permanently highlghted.
 const buttons = document.querySelectorAll("#keypad div");
 buttons.forEach((button) => {
   button.addEventListener("mouseover", () => {
@@ -38,7 +40,7 @@ buttons.forEach((button) => {
 // Handle all clear (AC) button
 const acButton = document.querySelector("#ac");
 ac.addEventListener("click", () => {
-  changeOutput(0);
+  changeOutput(DEFAULT_OUTPUT);
   resetVariables();
 });
 
@@ -48,22 +50,15 @@ digitButtons.forEach((digitButton) => {
   digitButton.addEventListener("click", () => {
     // Wipe display if one of these conditions are met:
     if (
-      output.textContent == "0" ||
+      output.textContent === DEFAULT_OUTPUT ||
       awaitingSecondOperand ||
       awaitingNewOperation
     ) {
-      awaitingSecondOperand = false;
-      awaitingNewOperation = false;
+      resetFlags();
       changeOutput("");
     }
 
     appendOutput(digitButton.textContent);
-
-    // Reset operator button opacity ("highlighted" effect) after second operand is selected
-    if (!awaitingSecondOperand && selectedOperatorButton) {
-      selectedOperatorButton.style.opacity = DEFAULT_OPACITY;
-      selectedOperatorButton = null;
-    }
   });
 });
 
@@ -71,12 +66,12 @@ digitButtons.forEach((digitButton) => {
 const decimalButton = document.querySelector("#decimal");
 decimalButton.addEventListener("click", () => {
   if (awaitingSecondOperand || awaitingNewOperation) {
-    awaitingSecondOperand = false;
-    awaitingNewOperation = false;
-    changeOutput("0");
+    resetFlags();
+    changeOutput(DEFAULT_OUTPUT);
   }
 
-  if (output.textContent.slice(-1) !== decimalButton.textContent) {
+  // Can only have one decimal point
+  if (!output.textContent.includes(decimalButton.textContent)) {
     appendOutput(decimalButton.textContent);
   }
 });
@@ -85,19 +80,16 @@ decimalButton.addEventListener("click", () => {
 const operatorButtons = document.querySelectorAll(".operator");
 operatorButtons.forEach((operatorButton) => {
   operatorButton.addEventListener("click", () => {
-    // Reset opacity of previously selected operator
-    if (selectedOperatorButton) {
-      selectedOperatorButton.style.opacity = DEFAULT_OPACITY;
-    }
+    // Remove "highlighted" effect of previously selected operator
+    if (selectedOperatorButton) removeOperatorHighlightedEffect();
+    // Give the new selected operator the "highlighted" effect
+    setOperatorHighlightedEffect(operatorButton);
 
-    // Set opacity of new selected operator ("highlighted" effect);
-    operatorButton.style.opacity = HIGHLIGHT_OPACITY;
-    selectedOperatorButton = operatorButton;
-
-    // Get the first operand
-    if (globalOperator == null) {
+    // Get and set the first operand
+    if (globalOperator === null) {
       // no pending operations:
-      firstOperand = parseFloat(output.textContent);
+      firstOperand = output.textContent;
+      evaluate();
     } else {
       // pending operation: evaluate first before using next operator
       firstOperand = evaluate();
@@ -109,39 +101,32 @@ operatorButtons.forEach((operatorButton) => {
   });
 });
 
-// Handle equal button click
+// Handle equals button click
 const equalsButton = document.querySelector("#equals");
 equalsButton.addEventListener("click", () => {
-  if (globalOperator != null) {
-    evaluate();
-    resetVariables();
-    awaitingNewOperation = true;
-  }
+  // If no opereator selected, make the first operand the current output
+  if (globalOperator === null) firstOperand = output.textContent;
 
-  // Reset opacity of previously selected operator
-  if (selectedOperatorButton) {
-    selectedOperatorButton.style.opacity = DEFAULT_OPACITY;
-    selectedOperatorButton = null;
-  }
+  // Evaluate operation, reset variables, and set flag
+  evaluate();
+  resetVariables();
+  awaitingNewOperation = true;
+
+  // Remove "highlighted" effect of previously selected operator
+  if (selectedOperatorButton) removeOperatorHighlightedEffect();
 });
 
 //  Handle plus-minus button click
 const plusMinusButton = document.querySelector("#plus-minus");
 plusMinusButton.addEventListener("click", () => {
-  if (awaitingSecondOperand || awaitingNewOperation) {
-    awaitingSecondOperand = false;
-    awaitingNewOperation = false;
-  }
+  if (awaitingSecondOperand || awaitingNewOperation) resetFlags();
   changeOutput(multiply(output.textContent, -1));
 });
 
 // Handle percentage button click
 const percentageButton = document.querySelector("#percentage");
 percentageButton.addEventListener("click", () => {
-  if (awaitingSecondOperand || awaitingNewOperation) {
-    awaitingSecondOperand = false;
-    awaitingNewOperation = false;
-  }
+  if (awaitingSecondOperand || awaitingNewOperation) resetFlags();
   changeOutput(divide(output.textContent, 100));
 });
 
@@ -178,7 +163,11 @@ function operate(operator, num1, num2) {
     case DIVIDE:
       result = divide(num1, num2);
       break;
+    default:
+      result = num1;
+      break;
   }
+
   return result;
 }
 
@@ -219,4 +208,19 @@ function changeOutput(value) {
 function appendOutput(value) {
   let newOutput = output.textContent + value;
   output.textContent = formatOutput(newOutput);
+}
+
+function removeOperatorHighlightedEffect() {
+  selectedOperatorButton.style.opacity = DEFAULT_OPACITY;
+  selectedOperatorButton = null;
+}
+
+function setOperatorHighlightedEffect(button) {
+  button.style.opacity = HIGHLIGHT_OPACITY;
+  selectedOperatorButton = button;
+}
+
+function resetFlags() {
+  awaitingSecondOperand = false;
+  awaitingNewOperation = false;
 }
