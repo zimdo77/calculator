@@ -41,7 +41,9 @@ buttons.forEach((button) => {
 const acButton = document.querySelector("#ac");
 ac.addEventListener("click", () => {
   changeOutput(DEFAULT_OUTPUT);
+  removeOperatorHighlightedEffect();
   resetVariables();
+  resetFlags();
 });
 
 // Handle digit button clicks
@@ -128,6 +130,23 @@ const percentageButton = document.querySelector("#percentage");
 percentageButton.addEventListener("click", () => {
   if (awaitingSecondOperand || awaitingNewOperation) resetFlags();
   changeOutput(divide(output.textContent, 100));
+});
+
+// Handle keyboard pressing events
+document.addEventListener("keydown", (event) => {
+  const key = event.key;
+  const button = document.querySelector(`#keypad div[data-key="${key}"]`);
+
+  if (button) {
+    // add active state to trigger animation
+    button.classList.add("active");
+    setTimeout(() => {
+      button.classList.remove("active");
+    }, 200);
+
+    // handle key press
+    button.click();
+  }
 });
 
 // FUNCTIONS //

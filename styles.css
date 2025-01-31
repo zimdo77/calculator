@@ -57,6 +57,12 @@ body {
   /* border: 2px solid black; */
   margin: 2.5px;
   border-radius: 10px;
+  transition: transform 0.1s ease;
+}
+
+#keypad div:active,
+#keypad div.active {
+  transform: scale(0.95);
 }
 
 #keypad #zero {
