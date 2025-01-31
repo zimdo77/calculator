@@ -2,11 +2,15 @@ const ADD = "+";
 const SUBTRACT = "-";
 const MULTIPLY = "×";
 const DIVIDE = "÷";
+
 const MAX_DISPLAY_CHARACTERS = 9;
+const DEFAULT_OPACITY = 1;
+const HIGHLIGHT_OPACITY = 0.8;
 
 let firstOperand = null;
 let secondOperand = null;
 let globalOperator = null;
+let selectedOperatorButton = null;
 
 let awaitingSecondOperand = false; // flag triggered after choosing operator
 let awaitingNewOperation = false; // flag triggered after clicking equals sign
@@ -19,11 +23,15 @@ changeOutput(0);
 const buttons = document.querySelectorAll("#keypad div");
 buttons.forEach((button) => {
   button.addEventListener("mouseover", () => {
-    button.style.cursor = "pointer";
-    button.style.opacity = "0.8";
+    if (button !== selectedOperatorButton) {
+      button.style.cursor = "pointer";
+      button.style.opacity = HIGHLIGHT_OPACITY;
+    }
   });
   button.addEventListener("mouseout", () => {
-    button.style.opacity = "1";
+    if (button !== selectedOperatorButton) {
+      button.style.opacity = DEFAULT_OPACITY;
+    }
   });
 });
 
@@ -50,6 +58,12 @@ digitButtons.forEach((digitButton) => {
     }
 
     appendOutput(digitButton.textContent);
+
+    // Reset operator button opacity ("highlighted" effect) after second operand is selected
+    if (!awaitingSecondOperand && selectedOperatorButton) {
+      selectedOperatorButton.style.opacity = DEFAULT_OPACITY;
+      selectedOperatorButton = null;
+    }
   });
 });
 
@@ -71,13 +85,25 @@ decimalButton.addEventListener("click", () => {
 const operatorButtons = document.querySelectorAll(".operator");
 operatorButtons.forEach((operatorButton) => {
   operatorButton.addEventListener("click", () => {
+    // Reset opacity of previously selected operator
+    if (selectedOperatorButton) {
+      selectedOperatorButton.style.opacity = DEFAULT_OPACITY;
+    }
+
+    // Set opacity of new selected operator ("highlighted" effect);
+    operatorButton.style.opacity = HIGHLIGHT_OPACITY;
+    selectedOperatorButton = operatorButton;
+
+    // Get the first operand
     if (globalOperator == null) {
-      // no pending operations
+      // no pending operations:
       firstOperand = parseFloat(output.textContent);
     } else {
       // pending operation: evaluate first before using next operator
       firstOperand = evaluate();
     }
+
+    // Get operator symbol and set flag
     globalOperator = operatorButton.textContent;
     awaitingSecondOperand = true;
   });
@@ -90,6 +116,12 @@ equalsButton.addEventListener("click", () => {
     evaluate();
     resetVariables();
     awaitingNewOperation = true;
+  }
+
+  // Reset opacity of previously selected operator
+  if (selectedOperatorButton) {
+    selectedOperatorButton.style.opacity = DEFAULT_OPACITY;
+    selectedOperatorButton = null;
   }
 });
 
