@@ -20,10 +20,10 @@ const buttons = document.querySelectorAll("#keypad div");
 buttons.forEach((button) => {
   button.addEventListener("mouseover", () => {
     button.style.cursor = "pointer";
-    button.style.backgroundColor = "#c9c9c9";
+    button.style.opacity = "0.8";
   });
   button.addEventListener("mouseout", () => {
-    button.style.backgroundColor = "";
+    button.style.opacity = "1";
   });
 });
 
@@ -38,7 +38,7 @@ ac.addEventListener("click", () => {
 const digitButtons = document.querySelectorAll(".digit");
 digitButtons.forEach((digitButton) => {
   digitButton.addEventListener("click", () => {
-    // Conditions for wiping existing display
+    // Wipe display if one of these conditions are met:
     if (
       output.textContent == "0" ||
       awaitingSecondOperand ||
@@ -48,9 +48,23 @@ digitButtons.forEach((digitButton) => {
       awaitingNewOperation = false;
       changeOutput("");
     }
-    // Append entered digits
+
     appendOutput(digitButton.textContent);
   });
+});
+
+// Handle decimal button click
+const decimalButton = document.querySelector("#decimal");
+decimalButton.addEventListener("click", () => {
+  if (awaitingSecondOperand || awaitingNewOperation) {
+    awaitingSecondOperand = false;
+    awaitingNewOperation = false;
+    changeOutput("0");
+  }
+
+  if (output.textContent.slice(-1) !== decimalButton.textContent) {
+    appendOutput(decimalButton.textContent);
+  }
 });
 
 // Handle operator button clicks
@@ -82,19 +96,21 @@ equalsButton.addEventListener("click", () => {
 //  Handle plus-minus button click
 const plusMinusButton = document.querySelector("#plus-minus");
 plusMinusButton.addEventListener("click", () => {
+  if (awaitingSecondOperand || awaitingNewOperation) {
+    awaitingSecondOperand = false;
+    awaitingNewOperation = false;
+  }
   changeOutput(multiply(output.textContent, -1));
 });
 
 // Handle percentage button click
 const percentageButton = document.querySelector("#percentage");
 percentageButton.addEventListener("click", () => {
+  if (awaitingSecondOperand || awaitingNewOperation) {
+    awaitingSecondOperand = false;
+    awaitingNewOperation = false;
+  }
   changeOutput(divide(output.textContent, 100));
-});
-
-// Handle decimal button click
-const decimalButton = document.querySelector("#decimal");
-decimalButton.addEventListener("click", () => {
-  appendOutput(".");
 });
 
 // FUNCTIONS //
@@ -170,8 +186,5 @@ function changeOutput(value) {
 
 function appendOutput(value) {
   let newOutput = output.textContent + value;
-  if (value !== ".") {
-    newOutput = parseFloat(newOutput);
-  }
   output.textContent = formatOutput(newOutput);
 }
