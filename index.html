@@ -4,12 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Calculator</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="pink-styles.css" />
     <script src="script.js" defer></script>
   </head>
   <body>
     <div id="calculator">
-      <div id="output-display"></div>
+      <div>
+        <div class="duck">
+          <img src="./images/duck-family.png" height="80px" width="80px"/>
+        </div>
+        <div id="output-display"></div>
+      </div>
       <div id="keypad">
         <div id="ac" data-key="c">AC</div>
         <div id="delete" data-key="Backspace">DEL</div>
@@ -33,7 +38,9 @@
       </div>
     </div>
     <div class="text">
-      <p id="text-1">You can also use your keyboard to trigger the calculator!</p>
+      <p id="text-1">
+        You can also use your keyboard to trigger the calculator!
+      </p>
     </div>
   </body>
 </html>
