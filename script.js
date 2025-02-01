@@ -125,11 +125,17 @@ plusMinusButton.addEventListener("click", () => {
   changeOutput(multiply(output.textContent, -1));
 });
 
-// Handle percentage button click
-const percentageButton = document.querySelector("#percentage");
-percentageButton.addEventListener("click", () => {
-  if (awaitingSecondOperand || awaitingNewOperation) resetFlags();
-  changeOutput(divide(output.textContent, 100));
+// Handle delete button click
+const deleteButton = document.querySelector("#delete");
+deleteButton.addEventListener("click", () => {
+  if (!awaitingSecondOperand && !awaitingNewOperation) {
+    const display = output.textContent;
+    if (display.length === 1) {
+      if (display !== DEFAULT_OUTPUT) output.textContent = DEFAULT_OUTPUT;
+    } else {
+      output.textContent = display.slice(0, display.length - 1);
+    }
+  }
 });
 
 // Handle keyboard pressing events
@@ -146,11 +152,6 @@ document.addEventListener("keydown", (event) => {
 
     // handle key press
     button.click();
-  }
-
-  // Undo output with backspace
-  if (key === "Backspace" && !awaitingSecondOperand && !awaitingNewOperation) {
-    undoOutput();
   }
 });
 
@@ -232,15 +233,6 @@ function changeOutput(value) {
 function appendOutput(value) {
   let newOutput = output.textContent + value;
   output.textContent = formatOutput(newOutput);
-}
-
-function undoOutput() {
-  const display = output.textContent;
-  if (display.length === 1) {
-    if (display !== DEFAULT_OUTPUT) output.textContent = DEFAULT_OUTPUT;
-  } else {
-    output.textContent = display.slice(0, display.length - 1);
-  }
 }
 
 function removeOperatorHighlightedEffect() {

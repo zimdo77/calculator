@@ -80,7 +80,7 @@ body {
 
 #ac,
 #plus-minus,
-#percentage {
+#delete {
   background-color: #2D93AD;
 }
 
@@ -93,11 +93,6 @@ body {
 
 #text-1 {
   font-size: 30px;
-  margin-top: 50px;
+  margin-top: 60px;
   margin-bottom: 10px;
-}
-
-#text-2 {
-  font-size: 30px;
-  margin-top: 10px;
 }
